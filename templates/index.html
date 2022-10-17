@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://preview.babylonjs.com/ammo.js"></script>
+        <script src="https://preview.babylonjs.com/cannon.js"></script>
+        <script src="https://preview.babylonjs.com/Oimo.js"></script>
+        <script src="https://preview.babylonjs.com/earcut.min.js"></script>
+        <script src="https://preview.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+
+        var startRenderLoop = function (engine, canvas) {
+            engine.runRenderLoop(function () {
+                if (sceneToRender && sceneToRender.activeCamera) {
+                    sceneToRender.render();
+                }
+            });
+        }
+
+        var engine = null;
+        var scene = null;
+        var sceneToRender = null;
+        var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+        var url = "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js";
+var s = document.createElement("script");
+s.src = url;
+document.head.appendChild(s);
+
+
+var createScene = function () {
+    // This creates a basic Babylon Scene object (non-mesh)
+    var scene = new BABYLON.Scene(engine);
+
+    // This creates and positions a free camera (non-mesh)
+    var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), scene);
+    camera.zoomToMouseLocation = true;
+    camera.wheelDeltaPercentage = 0.05;
+    camera.attachControl(canvas);
+
+
+
+    //     engine.runRenderLoop(() => {
+    // console.log(camera)
+    //      })
+    
+	var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+
+    // some fun materials    
+    var yellowMaterial = new BABYLON.StandardMaterial("yellow", scene);
+    yellowMaterial.diffuseColor = new BABYLON.Color3(.9, .9, 0);
+
+    var boxMaterial = new BABYLON.StandardMaterial("red", scene);
+    boxMaterial.diffuseColor = new BABYLON.Color3(0.9, 0, 0.5);
+    
+    var greenMaterial = new BABYLON.StandardMaterial("green", scene);
+    greenMaterial.diffuseColor = new BABYLON.Color3(0, 0.8, 0);
+    greenMaterial.emissiveColor   = new BABYLON.Color3(0, 0.1, 0);
+    
+    var blueMaterial = new BABYLON.StandardMaterial("blue", scene);
+    blueMaterial.diffuseColor = new BABYLON.Color3(0, 0.3, 1);
+    
+    var goldMaterial = new BABYLON.StandardMaterial("gold", scene);
+    goldMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0);
+
+	//Creation of a box
+	//(name of the box, size, scene)
+	var box = BABYLON.Mesh.CreateBox("box", 6.0, scene);
+    box.material = boxMaterial;
+    
+	//Creation of a sphere 
+	//(name of the sphere, segments, diameter, scene) 
+	var sphere = BABYLON.Mesh.CreateSphere("sphere", 10.0, 10.0, scene);
+
+	//Creation of a plane
+	//(name of the plane, size, scene)
+	var plane = BABYLON.Mesh.CreatePlane("plane", 10.0, scene, false, BABYLON.Mesh.DOUBLESIDE);
+    plane.material = blueMaterial;
+
+	//Creation of a cylinder
+	//(name, height, diameter, tessellation, scene, updatable)
+	var cylinder = BABYLON.Mesh.CreateCylinder("cylinder", 3, 3, 3, 6, 1, scene, false);
+    cylinder.material = goldMaterial;
+
+	// Creation of a torus
+	// (name, diameter, thickness, tessellation, scene, updatable)
+	var torus = BABYLON.Mesh.CreateTorus("torus", 5, 1, 10, scene, false);
+
+	// Creation of a knot
+	// (name, radius, tube, radialSegments, tubularSegments, p, q, scene, updatable)
+	var knot = BABYLON.Mesh.CreateTorusKnot("knot", 2, 0.5, 128, 64, 2, 3, scene);
+    knot.material = greenMaterial;
+    
+	// Moving elements
+	box.position = new BABYLON.Vector3(-10, -50, 0);   // Using a vector
+	sphere.position = new BABYLON.Vector3(0, -40, 0); // Using a vector
+	plane.position.z = 10;
+    plane.position.y = -50;                             // Using a single coordinate component
+	cylinder.position.z = -10;
+    cylinder.position.y = -50;
+    cylinder.position.y = -50;
+	torus.position.x = 10;
+    torus.position.y = -50;
+	knot.position.y = -60;
+
+
+    s.onload = function() {
+    scene.onPointerObservable.add((evt, pointerInfo) => {
+      
+        var pickResult = scene.pick(scene.pointerX, scene.pointerY);
+        if (evt.pickInfo.hit) {
+            var pickPoint = pickResult.pickedPoint
+            var impact = new BABYLON.AbstractMesh("impact", scene)
+            impact.position = new BABYLON.Vector3(pickPoint.x, pickPoint.y, pickPoint.z);
+            gsap.to(camera.target,2,{x:pickPoint.x ,y:pickPoint.y,z:pickPoint.z})
+                  gsap.to(camera, 2, { radius: 50 });
+
+
+        }
+
+        var impact = new BABYLON.AbstractMesh("impact", scene)
+        impact.position = pickResult.ray.direction
+        gsap.to(camera.setTarget,1,{x:impact.position.x ,y:impact.position.y,z:impact.position.z})
+
+    }, BABYLON.PointerEventTypes.POINTERDOUBLETAP)
+}
+
+    return scene;
+};
+
+                window.initFunction = async function() {
+                    
+                    
+                    var asyncEngineCreation = async function() {
+                        try {
+                        return createDefaultEngine();
+                        } catch(e) {
+                        console.log("the available createEngine function failed. Creating the default engine instead");
+                        return createDefaultEngine();
+                        }
+                    }
+
+                    window.engine = await asyncEngineCreation();
+        if (!engine) throw 'engine should not be null.';
+        startRenderLoop(engine, canvas);
+        window.scene = createScene();};
+        initFunction().then(() => {sceneToRender = scene                    
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
+</html>
